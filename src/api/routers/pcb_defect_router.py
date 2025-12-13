@@ -1,11 +1,13 @@
-from fastapi import APIRouter, File, UploadFile, Request
+from fastapi import APIRouter, File, UploadFile, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from src.services.logger import append_to_json_file
 
 from ultralytics import YOLO
 import cv2
 
 from pathlib import Path
+from datetime import datetime
 import numpy as np
 import json, os
 
@@ -39,14 +41,26 @@ async def show_form(request: Request):
     })
 
 @router.post("/predict", response_class=HTMLResponse)
-async def predict_display(
+async def predict_defect( #bro what. . .
         request: Request,
         file: UploadFile = File(...),
+        threshold: float = Form(50.0),
+        selected_classes: str = Form("")
     ):
     try:
         file_bytes = await file.read()
         nparr = np.frombuffer(file_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        confidence_threshold = threshold / 100.0
+
+        if selected_classes:
+            selected_classes_list = [
+                cls.strip().lower()
+                for cls in selected_classes.split(",")
+                if cls.strip()
+            ]
+        else:
+            selected_classes_list = []
 
         results = model(img)[0]
 
@@ -75,12 +89,25 @@ async def predict_display(
         img_path = uploads_folder / f"pred_{file.filename}"
         cv2.imwrite(str(img_path), img)
 
+        log = {
+            "filename": file.filename,
+            "threshold": confidence_threshold,
+            "selected_classes": selected_classes_list,
+            "img_path": str(img_path),
+            "detections": detections,
+            "timestamp": datetime.utcnow().isoformat()
+        }
 
+        append_to_json_file("static/logs/detections_log.json", log)
 
         return templates.TemplateResponse("pcb_defect_result.html", {
             "request": request,
             "image_url": img_path,
+            "threshold": confidence_threshold,
+            "selected_classes": selected_classes_list,
             "detections": detections,
+            "title": "Результат детектирования"
         })
+
     except Exception as e:
         return templates.TemplateResponse("error.html", {"request": request, "error": str(e), "status_code": 500})
