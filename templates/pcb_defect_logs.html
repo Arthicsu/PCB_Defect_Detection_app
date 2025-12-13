@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-5">
+    <h2 class="mb-4">Журнал детекций</h2>
+
+    {% if logs|length == 0 %}
+        <div class="alert alert-info">Логов пока нет</div>
+    {% endif %}
+
+    {% for log in logs %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between">
+                <strong>{{ log.filename }}</strong>
+                <span class="badge bg-secondary">{{ log.timestamp }}</span>
+            </div>
+
+            <ul class="list-group list-group-flush mt-2">
+                {% for d in log.detections %}
+                <li class="list-group-item">
+                    <strong>{{ d.class_name }}</strong>
+                    — {{ (d.confidence * 100) | round(1) }}%
+                    — area: {{ d.bbox_area }}
+                    <br>
+                    <small class="text-muted">bbox: {{ d.bbox }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

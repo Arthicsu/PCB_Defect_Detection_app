@@ -2,19 +2,54 @@
 
 {% block content %}
 
-            <div class="row g-3 mt-5 mb-5 justify-content-center">
-                <h2 class="my-heading text-center mb-3">Детектирование и классификация дефектов на печатной плате</h2>
-                <div class="col-md-5">
-                    <div class="card shadow-sm p-4">
-                        <p>Загрузите снимки плат</p>
-                        <p>Доступные классы: {{ classes.values()|join(', ') }}</p>
-                        <form action="/predict" method="post" enctype="multipart/form-data">
-                            <input type="file" name="file" accept="image/*" required>
-                            <br><br>
-                            <button type="submit" class="btn btn-outline-success w-100 mt-3">Распознать изображение</button>
-                        </form>
-                    </div>
+    <div class="container my-5">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm p-4">
+                    <form action="/predict" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Загрузите изображения</label>
+                            <input type="file" name="file" class="form-control" accept="image/*" multiple required onchange="previewImages(event)">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Порог уверенности: <span id="thrVal">50</span>%
+                            </label>
+                            <input type="range" class="form-range" name="threshold" min="1" max="100" value="50" oninput="thrVal.innerText=this.value">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Классы</label>
+                            <input type="text" id="selected_classes" name="selected_classes" class="form-control mb-2">
+
+                            <div class="border rounded p-2"
+                                 style="max-height:200px; overflow-y:auto">
+                                <div class="row row-cols-2 g-2">
+                                    {% for c in classes.values() %}
+                                    <div class="col">
+                                        <div class="badge bg-light text-dark border w-100 p-2" style="cursor:pointer" onclick="addClassToInput('{{ c }}')">
+                                            {{ c }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success w-100 fw-bold">
+                            Запустить детектирование
+                        </button>
+                    </form>
                 </div>
             </div>
+
+            <div class="col-lg-7">
+                <h5 class="mb-3">Предпросмотр изображений</h5>
+                <div id="preview" class="row g-2"></div>
+            </div>
+
+        </div>
+    </div>
 
 {% endblock %}
