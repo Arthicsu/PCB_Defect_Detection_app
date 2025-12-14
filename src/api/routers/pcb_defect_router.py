@@ -1,5 +1,5 @@
-from fastapi import APIRouter, File, UploadFile, Request, Form
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import APIRouter, UploadFile, Request, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from src.services.logger import append_to_json_file
 
@@ -68,6 +68,9 @@ async def predict_defect(
 
             results = model(img)[0]
             detections = []
+            height, width = img.shape[:2]
+            board_area = width * height
+            total_defect_area = 0
 
             for box in results.boxes:
                 cls = int(box.cls[0])
@@ -82,6 +85,7 @@ async def predict_defect(
 
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 defect_area = (x2 - x1) * (y2 - y1)
+                total_defect_area += defect_area
 
                 detections.append({
                     "class_id": cls,
@@ -91,7 +95,6 @@ async def predict_defect(
                     "bbox_area": defect_area
                 })
 
-
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(img, f"{class_names[str(cls)]} {conf:.2f}",(x1, y1 - 5),
                             cv2.FONT_HERSHEY_SIMPLEX,
@@ -99,6 +102,7 @@ async def predict_defect(
 
             img_path = uploads_folder / f"pred_{uploaded_file.filename}"
             cv2.imwrite(str(img_path), img)
+            damage_percent = round((total_defect_area / board_area) * 100, 3)
 
             log = {
                 "filename": uploaded_file.filename,
@@ -106,6 +110,8 @@ async def predict_defect(
                 "selected_classes": selected_classes_list,
                 "img_path": str(img_path),
                 "detections": detections,
+                "damage_percent": damage_percent,
+                "total_defect_area": total_defect_area,
                 "timestamp": datetime.utcnow().isoformat()
             }
             append_to_json_file("static/logs/detections_logs.json", log)
@@ -113,6 +119,9 @@ async def predict_defect(
             results_for_template.append({
                 "filename": uploaded_file.filename,
                 "image_url": str(img_path),
+                "damage_percent": damage_percent,
+                "total_defect_area": total_defect_area,
+                "board_area": board_area,
                 "detections": detections
             })
 

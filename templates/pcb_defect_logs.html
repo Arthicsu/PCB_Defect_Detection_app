@@ -3,32 +3,96 @@
 {% block content %}
 
 <div class="container my-5">
-    <h2 class="mb-4">Журнал детекций</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Журнал детекций</h2>
+
+        <a href="logs/download/zip" class="btn btn-outline-primary">
+            Скачать полный ZIP-архив детектирования
+        </a>
+        <a href="logs/download/json" class="btn btn-outline-success">
+            Скачать JSON-логи
+        </a>
+    </div>
 
     {% if logs|length == 0 %}
-        <div class="alert alert-info">Логов пока нет</div>
+        <div class="alert alert-info">
+            Логов пока нет
+        </div>
     {% endif %}
 
     {% for log in logs %}
-    <div class="card mb-3 shadow-sm">
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between flex-wrap">
+                <div>
+                    <strong>{{ log.filename }}</strong>
+                    <div class="text-muted small">
+                        {{ log.timestamp }}
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <span class="badge bg-warning text-dark">
+                        Детекций: {{ log.detections|length }}
+                    </span>
+                    <span class="badge bg-danger text-dark">
+                        Повреждение платы: <strong>{{ log.damage_percent }}%</strong>
+                    </span>
+
+                </div>
+            </div>
+        </div>
+
         <div class="card-body">
 
-            <div class="d-flex justify-content-between">
-                <strong>{{ log.filename }}</strong>
-                <span class="badge bg-secondary">{{ log.timestamp }}</span>
+            <div class="mb-3">
+                <strong>Классы:</strong>
+                {% if log.selected_classes|length == 0 %}
+                    <span class="text-muted">все</span>
+                {% else %}
+                    {{ log.selected_classes | join(", ") }}
+                {% endif %}
             </div>
 
-            <ul class="list-group list-group-flush mt-2">
-                {% for d in log.detections %}
-                <li class="list-group-item">
-                    <strong>{{ d.class_name }}</strong>
-                    — {{ (d.confidence * 100) | round(1) }}%
-                    — area: {{ d.bbox_area }}
-                    <br>
-                    <small class="text-muted">bbox: {{ d.bbox }}</small>
-                </li>
-                {% endfor %}
-            </ul>
+            <div class="mb-4">
+                <img src="/{{ log.img_path }}" class="img-fluid rounded border" style="max-height: 300px; object-fit: contain;">
+            </div>
+
+            {% if log.detections|length == 0 %}
+                <div class="alert alert-success">
+                    Дефекты не обнаружены
+                </div>
+            {% else %}
+                <div class="row g-3">
+                    {% for d in log.detections %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border">
+                            <div class="card-body">
+                                <h6 class="card-title mb-2">
+                                    <span class="badge bg-primary">
+                                        {{ d.class_name }}
+                                    </span>
+                                    <span class="badge bg-success">
+                                        {{ (d.confidence * 100) | round(1) }}%
+                                    </span>
+                                </h6>
+                                <p class="mb-1">
+                                    <strong>Площадь:</strong>
+                                    {{ d.bbox_area }} px²
+                                </p>
+
+                                <p class="text-muted small mb-0">
+                                    bbox: {{ d.bbox }}
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
         </div>
     </div>

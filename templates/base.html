@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="../static/js/script.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" defer></script>
-    <title>ArthicsuGPT - {{ title }}</title>
+    <title>Defect detector - {{ title }}</title>
 </head>
 <body>
     <div class="wrapper">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href="/"><i class="fa-brands fa-artstation"></i> ArthicsuGPT</a>
+                <a class="navbar-brand" href="/"><i class="fa-brands fa-artstation"></i> Defect detector</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -32,8 +32,13 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="/logs/download/detections_log.json" target="_blank">
+                                    <a class="dropdown-item" href="tab/logs/download/json" target="_blank">
                                         Скачать логи
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="tab/logs/download/zip" target="_blank">
+                                        Скачать полный архив детектирования
                                     </a>
                                 </li>
                             </ul>
@@ -53,8 +58,8 @@
             <div class="container text-center">
                 <span>
                     Проект на GitHub:
-                    <a href="https://github.com/Arthicsu/ArthicsuGPT" target="_blank" class="text-decoration-none text-light">
-                        <i class="fab fa-github"></i> Репозиторий ArthicsuGPT
+                    <a href="https://github.com/Arthicsu/PCB_Defect_Detection_app" target="_blank" class="text-decoration-none text-light">
+                        <i class="fab fa-github"></i> PCB_Defect_Detection_app
                     </a>
                 </span>
             </div>
