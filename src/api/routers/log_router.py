@@ -6,16 +6,19 @@ from pathlib import Path
 import json
 
 from src.services.logger import iterfile, remove_file, build_zip
+from src.api.routers.pcb_defect_router import uploads_folder
 
 router = APIRouter(prefix="/tab", tags=["LOGS"])
 templates = Jinja2Templates(directory="templates")
 
 zip_name = "full_detections.zip"
 zip_path = Path("static/logs") / zip_name
-uploads_dir = Path("static/uploads")
 
 log_filename = "detections_logs.json"
 log_path = Path("static/logs") / log_filename
+logs_folder = Path("static/logs")
+logs_folder.mkdir(parents=True, exist_ok=True)
+
 
 @router.get("/logs", response_class=HTMLResponse)
 async def show_logs(request: Request):
@@ -41,9 +44,8 @@ async def download_logs_json():
 async def download_full_zip(background_tasks: BackgroundTasks):
     build_zip(
         zip_path=zip_path,
-        images_dir=uploads_dir,
+        images_dir=uploads_folder,
         log_path=log_path
     )
     background_tasks.add_task(remove_file, zip_path)
-    return StreamingResponse(iterfile(zip_path), media_type="application/zip",
-                             headers={"Content-Disposition": f"attachment; filename={zip_name}"})
+    return StreamingResponse(iterfile(zip_path), media_type="application/zip", headers={"Content-Disposition": f"attachment; filename={zip_name}"})

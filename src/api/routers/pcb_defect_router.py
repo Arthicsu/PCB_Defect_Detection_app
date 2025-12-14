@@ -18,6 +18,7 @@ templates = Jinja2Templates(directory="templates")
 model_path = "src/models/detect/train6/weights/best.pt"
 classes_path = "src/models/pcb_defect_classes.json"
 uploads_folder = Path("static/uploads")
+uploads_folder.mkdir(parents=True, exist_ok=True)
 
 
 if os.path.exists(model_path) and os.path.exists(classes_path):
